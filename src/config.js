@@ -7,6 +7,12 @@ export const STORE = {
   pixKey: '83993703432',
   pixKeyDisplay: '(83) 99370-3432',
   pixKeyType: 'Telefone',
+  // Chave no formato do código Pix (telefone com +55).
+  pixKeyEmv: '+5583993703432',
+  // Nome do titular e cidade da conta Pix, como aparecem no banco.
+  // Enquanto estiverem vazios, o site mostra só a chave (sem QR Code).
+  pixName: '',
+  pixCity: '',
   tables: 12,
   timeZone: 'America/Fortaleza',
   // Abre todos os dias das 19h às 23h.

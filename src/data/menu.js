@@ -320,6 +320,14 @@ export const ALL_ITEMS = CATEGORIES.flatMap((c) =>
   c.items.map((item) => ({ ...item, categoryId: c.id, categoryName: c.name })),
 )
 
+// Sugestões do carrinho ("Que tal adicionar?"), por grupo e em ordem de preferência.
+// Só itens sem escolhas (porção, sabor...), para entrar no carrinho com um toque.
+export const SUGGESTIONS = [
+  { group: 'bebidas', items: ['coca-lata', 'guarana-lata', 'h2o-limao'] },
+  { group: 'doces', items: ['hot-morango-nutella', 'hot-banana-nutella'] },
+  { group: 'petiscos', items: ['batata-frita', 'batata-cheddar-bacon'] },
+]
+
 // Menor preço do item (para exibir "a partir de").
 export function basePrice(item) {
   if (item.variants) return Math.min(...item.variants.map((v) => v.price))

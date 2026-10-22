@@ -1196,3 +1196,116 @@ a {
   .store-bar { flex-wrap: wrap; }
   .store-bar .btn { width: 100%; }
 }
+
+/* Painel: abas com rolagem no celular */
+.admin .seg { overflow-x: auto; scrollbar-width: none; max-width: 100%; }
+.admin .seg::-webkit-scrollbar { display: none; }
+
+/* Painel: relatório */
+.report { display: grid; gap: 16px; }
+.report__filters { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.stats--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 720px) { .stats--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.report-grid { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) {
+  .report-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .report-card--wide { grid-column: 1 / -1; }
+}
+.report-card { display: grid; gap: 12px; align-content: start; padding: 16px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line); min-width: 0; }
+.report-card--empty { justify-items: center; padding: 40px 16px; color: var(--muted); text-align: center; }
+.report-card__title { font-size: 15px; font-weight: 800; }
+.report-card__title--gap { margin-top: 8px; }
+.report-card__hint { margin-top: -8px; color: var(--muted); font-size: 12px; }
+
+/* Colunas: uma série, cor única, rótulo só no pico, valor no hover/foco */
+.cols { display: flex; align-items: stretch; gap: 4px; height: 200px; padding-top: 34px; }
+.cols--dense { gap: 2px; }
+.cols__col { position: relative; flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; outline: none; }
+.cols__track { position: relative; flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center; border-bottom: 1px solid var(--line-2); }
+.cols__bar { position: relative; width: min(70%, 34px); min-height: 0; border-radius: 4px 4px 0 0; background: var(--accent); transition: opacity 0.15s; }
+.cols:hover .cols__bar { opacity: 0.55; }
+.cols .cols__col:hover .cols__bar, .cols .cols__col:focus-visible .cols__bar { opacity: 1; }
+.cols__peak { position: absolute; bottom: 100%; left: 50%; transform: translate(-50%, -4px); font-size: 11px; font-weight: 800; color: var(--text); white-space: nowrap; }
+.cols__label { font-size: 11px; color: var(--muted); font-weight: 700; white-space: nowrap; }
+.cols__sub { margin-top: -4px; font-size: 10px; color: var(--dim); }
+.cols__col[data-tip]:hover::after, .cols__col[data-tip]:focus-visible::after {
+  content: attr(data-tip);
+  position: absolute;
+  top: -32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  padding: 6px 9px;
+  border-radius: 8px;
+  background: var(--text);
+  color: var(--bg);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: var(--shadow);
+}
+
+.barlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.barlist__row { display: grid; grid-template-columns: 80px minmax(0, 1fr) auto; align-items: center; gap: 10px; font-size: 14px; }
+.barlist__label { color: var(--muted); font-weight: 700; }
+.barlist__track { height: 10px; border-radius: 4px; background: var(--surface-3); overflow: hidden; }
+.barlist__bar { display: block; height: 100%; border-radius: 4px; background: var(--accent); }
+.barlist__value { font-weight: 800; font-variant-numeric: tabular-nums; }
+
+.top-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.top-table th { padding: 0 8px 8px; text-align: left; color: var(--muted); font-size: 12px; font-weight: 700; border-bottom: 1px solid var(--line); }
+.top-table td { padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.top-table tr:last-child td { border-bottom: 0; }
+.top-table .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.top-table td.num:last-child { font-weight: 800; }
+.top-table__rank { width: 28px; color: var(--dim); font-weight: 800; }
+.top-table__name { display: block; font-weight: 700; }
+.top-table__bar { display: block; height: 4px; margin-top: 6px; border-radius: 4px; background: var(--accent); opacity: 0.8; }
+
+/* Carrinho: "Que tal adicionar?" */
+.upsell { padding: 14px 20px 4px; display: grid; gap: 10px; }
+.upsell__title { font-size: 13px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.upsell__list { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.upsell__item {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  padding: 10px 40px 10px 12px;
+  border-radius: 12px;
+  border: 1px dashed var(--accent-line);
+  background: var(--accent-soft);
+  text-align: left;
+  transition: border-color 0.2s, background 0.2s;
+}
+.upsell__item:hover { border-style: solid; border-color: var(--accent); }
+.upsell__name { font-weight: 700; font-size: 13px; line-height: 1.3; }
+.upsell__price { color: var(--accent); font-weight: 800; font-size: 13px; }
+.upsell__add {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+/* Pix: QR Code + copia e cola */
+.pix-qr { display: flex; gap: 14px; align-items: center; padding-bottom: 12px; border-bottom: 1px dashed var(--accent-line); }
+.pix-qr__img { flex: none; width: 132px; height: 132px; padding: 6px; border-radius: 12px; background: #fff; }
+.pix-qr__img svg { display: block; width: 100%; height: 100%; }
+.pix-qr__body { flex: 1; min-width: 0; display: grid; gap: 8px; }
+.pix-qr__title { font-weight: 800; font-size: 16px; }
+.btn--primary.is-done { background: var(--green); color: #08210f; }
+@media (max-width: 480px) {
+  .pix-qr { flex-direction: column; align-items: stretch; }
+  .pix-qr__img { width: 160px; height: 160px; align-self: center; }
+}
+.cols__col:first-child[data-tip]::after { left: 0; transform: none; }
+.cols__col:last-child[data-tip]::after { left: auto; right: 0; transform: none; }
+.cols--dense .cols__bar { width: 80%; }

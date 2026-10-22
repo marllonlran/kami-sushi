@@ -75,6 +75,24 @@ const remote = {
     return data.map(fromRow)
   },
 
+  // Para o relatório: todos os pedidos desde `since` (busca em páginas de 1000).
+  async listOrdersSince(since) {
+    const PAGE = 1000
+    const rows = []
+    for (let from = 0; ; from += PAGE) {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*')
+        .gte('created_at', since.toISOString())
+        .order('created_at', { ascending: true })
+        .range(from, from + PAGE - 1)
+      if (error) throw error
+      rows.push(...data)
+      if (data.length < PAGE) break
+    }
+    return rows.map(fromRow)
+  },
+
   async updateStatus(id, status) {
     const { error } = await supabase.from('orders').update({ status, updated_at: new Date().toISOString() }).eq('id', id)
     if (error) throw error
@@ -135,6 +153,10 @@ const local = {
     return read()
   },
 
+  async listOrdersSince(since) {
+    return read().filter((o) => new Date(o.createdAt) >= since)
+  },
+
   async updateStatus(id, status) {
     write(read().map((o) => (o.id === id ? { ...o, status, updatedAt: new Date().toISOString() } : o)))
   },
@@ -160,5 +182,6 @@ export const isCloud = !!supabase
 export const createOrder = (data) => backend.createOrder(data)
 export const getOrder = (id) => backend.getOrder(id)
 export const listOrders = () => backend.listOrders()
+export const listOrdersSince = (since) => backend.listOrdersSince(since)
 export const updateStatus = (id, status) => backend.updateStatus(id, status)
 export const subscribe = (cb) => backend.subscribe(cb)

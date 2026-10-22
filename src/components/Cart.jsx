@@ -1,4 +1,5 @@
 import { useCart } from '../context/CartContext'
+import { ALL_ITEMS, SUGGESTIONS } from '../data/menu'
 import { money } from '../lib/format'
 import { isOpen, hoursLabel } from '../lib/hours'
 import { STORE } from '../config'
@@ -12,10 +13,27 @@ export function lineDetails(l) {
   ].filter(Boolean)
 }
 
+const ITEM_BY_ID = Object.fromEntries(ALL_ITEMS.map((i) => [i.id, i]))
+
+// Até 3 sugestões: uma de cada grupo que ainda não está no carrinho.
+function pickSuggestions(lines, soldOut) {
+  const inCart = new Set(lines.map((l) => ITEM_BY_ID[l.itemId]?.categoryId))
+  const out = []
+  for (const g of SUGGESTIONS) {
+    if (inCart.has(g.group)) continue
+    const id = g.items.find((i) => ITEM_BY_ID[i] && !soldOut.includes(i))
+    if (id) out.push(ITEM_BY_ID[id])
+  }
+  return out.slice(0, 3)
+}
+
 export default function Cart({ onCheckout, paused = false, soldOut = [] }) {
-  const { lines, setQty, subtotal, count } = useCart()
+  const { lines, setQty, subtotal, count, add } = useCart()
   const open = isOpen()
   const soldOutLines = lines.filter((l) => soldOut.includes(l.itemId))
+  const suggestions = pickSuggestions(lines, soldOut)
+  const addSuggestion = (item) =>
+    add({ itemId: item.id, name: item.name, variant: null, options: {}, extras: [], note: '', qty: 1, unitPrice: item.price })
 
   if (!lines.length) {
     return (
@@ -62,6 +80,22 @@ export default function Cart({ onCheckout, paused = false, soldOut = [] }) {
           )
         })}
       </ul>
+      {suggestions.length > 0 && (
+        <div className="upsell">
+          <p className="upsell__title">Que tal adicionar?</p>
+          <div className="upsell__list">
+            {suggestions.map((item) => (
+              <button key={item.id} type="button" className="upsell__item" onClick={() => addSuggestion(item)} aria-label={`Adicionar ${item.name}`}>
+                <span className="upsell__name">{item.name}</span>
+                <span className="upsell__price">+ {money(item.price)}</span>
+                <span className="upsell__add" aria-hidden="true">
+                  <Icon name="plus" size={14} stroke={2.6} />
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="cart__footer">
         <div className="sum-row sum-row--total">
           <span>Subtotal</span>

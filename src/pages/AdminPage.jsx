@@ -5,6 +5,7 @@ import { signIn, signOut, useStaffSession } from '../lib/auth'
 import { useStoreSettings, updateStoreSettings } from '../lib/store'
 import { lineDetails } from '../components/Cart'
 import MenuManager from '../components/MenuManager'
+import SalesReport from '../components/SalesReport'
 import Icon, { Logo, Wordmark, WhatsAppIcon } from '../components/Icon'
 
 
@@ -373,6 +374,9 @@ export default function AdminPage() {
             <button type="button" role="tab" aria-selected={view === 'menu'} className={view === 'menu' ? 'is-on' : ''} onClick={() => setView('menu')}>
               Cardápio {store.soldOut.length > 0 && <span className="seg__count">{store.soldOut.length}</span>}
             </button>
+            <button type="button" role="tab" aria-selected={view === 'report'} className={view === 'report' ? 'is-on' : ''} onClick={() => setView('report')}>
+              Relatório
+            </button>
           </div>
           <div className="topbar__actions">
             <button
@@ -444,7 +448,9 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {view === 'menu' ? (
+        {view === 'report' ? (
+          <SalesReport />
+        ) : view === 'menu' ? (
           <MenuManager soldOut={store.soldOut} />
         ) : view === 'board' ? (
           <div className="board">
