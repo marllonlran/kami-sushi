@@ -47,7 +47,7 @@ export default function OrderPage() {
     return (
       <div className="page page--center">
         <div className="empty-state">
-          <Logo size={56} />
+          <Logo size={64} tilt />
           <h1>Pedido não encontrado</h1>
           <p className="muted">Confira o número do pedido ou fale com a gente.</p>
           <Link to="/" className="btn btn--primary">

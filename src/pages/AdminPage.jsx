@@ -3,7 +3,7 @@ import { money, clock, timeAgo } from '../lib/format'
 import { isCloud, listOrders, subscribe, updateStatus, FLOW, STATUS, TYPE_LABEL, PAYMENT_LABEL } from '../lib/orders'
 import { signIn, signOut, useStaffSession } from '../lib/auth'
 import { lineDetails } from '../components/Cart'
-import Icon, { Logo, WhatsAppIcon } from '../components/Icon'
+import Icon, { Logo, Wordmark, WhatsAppIcon } from '../components/Icon'
 
 
 const COLUMNS = [
@@ -65,7 +65,7 @@ function Login() {
   return (
     <div className="page page--center">
       <form className="login-card" onSubmit={submit}>
-        <Logo size={56} />
+        <Logo size={64} tilt />
         <h1>Painel da cozinha</h1>
         {isCloud ? (
           <>
@@ -322,10 +322,8 @@ export default function AdminPage() {
       <header className="topbar">
         <div className="topbar__inner container container--wide">
           <div className="brand">
-            <Logo size={34} />
-            <span className="brand__name">
-              Kami <em>Painel</em>
-            </span>
+            <Logo size={36} />
+            <Wordmark sub="Painel" />
           </div>
           <div className="seg" role="tablist">
             <button type="button" role="tab" aria-selected={view === 'board'} className={view === 'board' ? 'is-on' : ''} onClick={() => setView('board')}>

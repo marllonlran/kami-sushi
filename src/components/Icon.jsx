@@ -52,13 +52,24 @@ export function WhatsAppIcon({ size = 20 }) {
   )
 }
 
-export function Logo({ size = 40 }) {
+// Logo: carimbo japonês (hanko) com o kanji 神 (kami).
+export function Logo({ size = 40, tilt = false }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
-      <circle cx="32" cy="32" r="30" fill="#141210" />
-      <path d="M32 8a24 24 0 1 0 23.4 29.3" fill="none" stroke="var(--accent)" strokeWidth="5" strokeLinecap="round" />
-      <circle cx="32" cy="32" r="9" fill="var(--accent)" />
-      <path d="M44 13 58 4M47 17 60 9" stroke="var(--text)" strokeWidth="2.6" strokeLinecap="round" />
+    <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden="true" className={tilt ? 'logo--tilt' : undefined}>
+      <rect x="6" y="6" width="88" height="88" rx="16" fill="var(--accent)" />
+      <rect x="14" y="14" width="72" height="72" rx="10" fill="none" stroke="var(--accent-ink)" strokeWidth="3" />
+      <text x="50" y="72" textAnchor="middle" fontFamily="var(--display)" fontWeight="800" fontSize="58" fill="var(--accent-ink)">
+        神
+      </text>
     </svg>
+  )
+}
+
+export function Wordmark({ sub = 'Sushi' }) {
+  return (
+    <span className="wordmark">
+      <span className="wordmark__name">Kami</span>
+      <span className="wordmark__sub">{sub}</span>
+    </span>
   )
 }

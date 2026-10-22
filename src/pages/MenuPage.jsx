@@ -5,7 +5,7 @@ import { ALL_ITEMS, CATEGORIES, basePrice } from '../data/menu'
 import { useCart } from '../context/CartContext'
 import { money } from '../lib/format'
 import { isOpen, hoursLabel } from '../lib/hours'
-import Icon, { Logo, WhatsAppIcon } from '../components/Icon'
+import Icon, { Logo, Wordmark, WhatsAppIcon } from '../components/Icon'
 import ItemArt from '../components/ItemArt'
 import ItemSheet from '../components/ItemSheet'
 import Cart from '../components/Cart'
@@ -129,10 +129,8 @@ export default function MenuPage() {
       <header className="topbar">
         <div className="topbar__inner container">
           <a href="#top" className="brand" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <Logo size={36} />
-            <span className="brand__name">
-              Kami <em>Sushi</em>
-            </span>
+            <Logo size={38} />
+            <Wordmark />
           </a>
           <div className="topbar__actions">
             {lastOrder && (
@@ -285,10 +283,10 @@ export default function MenuPage() {
           )}
 
           <footer className="site-footer">
-            <Logo size={44} />
-            <p className="brand__name">
-              Kami <em>Sushi</em>
-            </p>
+            <div className="brand brand--stacked">
+              <Logo size={56} tilt />
+              <Wordmark />
+            </div>
             <p className="muted">Todos os dias · {hoursLabel}</p>
             <a href={`https://wa.me/${STORE.whatsapp}`} target="_blank" rel="noreferrer" className="btn btn--ghost btn--sm">
               <WhatsAppIcon size={16} /> {STORE.whatsappDisplay}
