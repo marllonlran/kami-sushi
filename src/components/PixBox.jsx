@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import QRCode from 'qrcode'
 import { STORE } from '../config'
 import { money } from '../lib/format'
 import { pixCode } from '../lib/pix'
@@ -27,10 +26,15 @@ export default function PixBox({ amount, compact = false }) {
   useEffect(() => {
     if (!code) return setQr(null)
     let alive = true
-    QRCode.toString(code, { type: 'svg', margin: 1, errorCorrectionLevel: 'M', color: { dark: '#000000', light: '#ffffff' } }).then(
-      (svg) => alive && setQr(svg),
-      (e) => console.error(e),
-    )
+    // A biblioteca de QR só é baixada quando o cliente escolhe Pix.
+    import('qrcode')
+      .then(({ default: QRCode }) =>
+        QRCode.toString(code, { type: 'svg', margin: 1, errorCorrectionLevel: 'M', color: { dark: '#000000', light: '#ffffff' } }),
+      )
+      .then(
+        (svg) => alive && setQr(svg),
+        (e) => console.error(e),
+      )
     return () => {
       alive = false
     }
