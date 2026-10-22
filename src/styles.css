@@ -1309,3 +1309,5 @@ a {
 .cols__col:first-child[data-tip]::after { left: 0; transform: none; }
 .cols__col:last-child[data-tip]::after { left: auto; right: 0; transform: none; }
 .cols--dense .cols__bar { width: 80%; }
+/* Botão principal do card não espreme o texto: os ícones descem se faltar espaço */
+.ticket__actions .btn--grow { flex: 1 1 150px; white-space: nowrap; }
