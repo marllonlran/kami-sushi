@@ -21,6 +21,15 @@ const PAYMENTS = [
 ]
 
 const PROFILE_KEY = 'kami:profile'
+
+// Mensagem para o cliente a partir do erro do servidor.
+function sendErrorMessage(e) {
+  const msg = e?.message || ''
+  if (msg.includes('LOJA_PAUSADA')) return 'Os pedidos foram pausados agora há pouco. Tente de novo em alguns minutos.'
+  const soldOut = msg.match(/ESGOTADO: (.+)/)
+  if (soldOut) return `Acabou de esgotar: ${soldOut[1]}. Remova do carrinho para continuar.`
+  return `Não conseguimos enviar o pedido. Verifique sua internet e tente de novo, ou chame a gente no WhatsApp ${STORE.whatsappDisplay}.`
+}
 const EMPTY_ADDRESS = { city: STORE.deliveryZones[0].id, cityName: '', street: '', number: '', district: '', complement: '', reference: '' }
 
 function loadProfile() {
@@ -46,7 +55,7 @@ export default function Checkout({ onClose, table }) {
   const [notes, setNotes] = useState('')
   const [errors, setErrors] = useState({})
   const [sending, setSending] = useState(false)
-  const [sendError, setSendError] = useState(false)
+  const [sendError, setSendError] = useState(null)
 
   const zone = STORE.deliveryZones.find((z) => z.id === address.city) || STORE.deliveryZones[0]
   // null = taxa a combinar pelo WhatsApp
@@ -78,7 +87,7 @@ export default function Checkout({ onClose, table }) {
       return
     }
     setSending(true)
-    setSendError(false)
+    setSendError(null)
     try {
       localStorage.setItem(PROFILE_KEY, JSON.stringify({ name, phone, address, type: type === 'mesa' ? profile.type : type }))
     } catch {}
@@ -100,7 +109,7 @@ export default function Checkout({ onClose, table }) {
     } catch (e) {
       console.error(e)
       setSending(false)
-      setSendError(true)
+      setSendError(sendErrorMessage(e))
       return
     }
     try {
@@ -307,7 +316,7 @@ export default function Checkout({ onClose, table }) {
           </div>
           {sendError && (
             <p className="field__error" role="alert">
-              Não conseguimos enviar o pedido. Verifique sua internet e tente de novo, ou chame a gente no WhatsApp {STORE.whatsappDisplay}.
+              {sendError}
             </p>
           )}
           <button type="submit" className="btn btn--primary btn--block btn--lg" disabled={sending}>

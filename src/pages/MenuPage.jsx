@@ -5,6 +5,7 @@ import { ALL_ITEMS, CATEGORIES, basePrice } from '../data/menu'
 import { useCart } from '../context/CartContext'
 import { money } from '../lib/format'
 import { isOpen, hoursLabel } from '../lib/hours'
+import { useStoreSettings } from '../lib/store'
 import Icon, { Logo, Wordmark, WhatsAppIcon } from '../components/Icon'
 import ItemArt from '../components/ItemArt'
 import ItemSheet from '../components/ItemSheet'
@@ -27,10 +28,10 @@ function useTable() {
   return table
 }
 
-function ItemCard({ item, onOpen }) {
+function ItemCard({ item, onOpen, soldOut = false }) {
   const from = item.variants && item.variants.length > 1
   return (
-    <button type="button" className="item-card" onClick={() => onOpen(item)}>
+    <button type="button" className={`item-card ${soldOut ? 'is-soldout' : ''}`} onClick={() => onOpen(item)} disabled={soldOut}>
       <div className="item-card__body">
         <h3 className="item-card__name">{item.name}</h3>
         {item.desc && <p className="item-card__desc">{item.desc}</p>}
@@ -46,9 +47,13 @@ function ItemCard({ item, onOpen }) {
         </div>
       </div>
       <ItemArt item={item} />
-      <span className="item-card__add" aria-hidden="true">
-        <Icon name="plus" size={18} stroke={2.4} />
-      </span>
+      {soldOut ? (
+        <span className="soldout-tag">Esgotado</span>
+      ) : (
+        <span className="item-card__add" aria-hidden="true">
+          <Icon name="plus" size={18} stroke={2.4} />
+        </span>
+      )}
     </button>
   )
 }
@@ -63,7 +68,10 @@ export default function MenuPage() {
   const [checkoutOpen, setCheckoutOpen] = useState(false)
   const [toast, setToast] = useState(null)
   const chipsRef = useRef(null)
+  const store = useStoreSettings()
   const open = isOpen()
+  const paused = open && store.paused
+  const isSoldOut = (id) => store.soldOut.includes(id)
 
   const lastOrder = useMemo(() => {
     try {
@@ -152,9 +160,13 @@ export default function MenuPage() {
       <section className="hero" id="top">
         <div className="hero__glow" aria-hidden="true" />
         <div className="container hero__inner">
-          <span className={`status-pill ${open ? 'is-open' : 'is-closed'}`}>
+          <span className={`status-pill ${paused ? 'is-paused' : open ? 'is-open' : 'is-closed'}`}>
             <span className="status-pill__dot" />
-            {open ? `Aberto agora · até ${STORE.hours.close}h` : `Fechado · abrimos às ${STORE.hours.open}h`}
+            {paused
+              ? 'Pedidos pausados por alguns minutos'
+              : open
+                ? `Aberto agora · até ${STORE.hours.close}h`
+                : `Fechado · abrimos às ${STORE.hours.open}h`}
           </span>
           <h1 className="hero__title">
             Sushi feito na hora,
@@ -236,7 +248,7 @@ export default function MenuPage() {
               {results.length ? (
                 <div className="item-grid">
                   {results.map((i) => (
-                    <ItemCard key={i.id} item={i} onOpen={setOpenItem} />
+                    <ItemCard key={i.id} item={i} onOpen={setOpenItem} soldOut={isSoldOut(i.id)} />
                   ))}
                 </div>
               ) : (
@@ -253,11 +265,11 @@ export default function MenuPage() {
                 </header>
                 <div className="featured">
                   {featured.map((i) => (
-                    <button key={i.id} type="button" className="feat-card" onClick={() => setOpenItem(i)}>
+                    <button key={i.id} type="button" className={`feat-card ${isSoldOut(i.id) ? 'is-soldout' : ''}`} onClick={() => setOpenItem(i)} disabled={isSoldOut(i.id)}>
                       <ItemArt item={i} />
                       <span className="feat-card__cat">{i.categoryName}</span>
                       <span className="feat-card__name">{i.name}</span>
-                      <span className="feat-card__price">{money(basePrice(i))}</span>
+                      <span className="feat-card__price">{isSoldOut(i.id) ? 'Esgotado' : money(basePrice(i))}</span>
                     </button>
                   ))}
                 </div>
@@ -274,7 +286,7 @@ export default function MenuPage() {
                   {c.id === 'lanches' && <p className="section-note">Adicionais: carne bovina R$ 7 · bacon R$ 5 · cheddar R$ 5</p>}
                   <div className="item-grid">
                     {c.items.map((i) => (
-                      <ItemCard key={i.id} item={{ ...i, categoryId: c.id, categoryName: c.name }} onOpen={setOpenItem} />
+                      <ItemCard key={i.id} item={{ ...i, categoryId: c.id, categoryName: c.name }} onOpen={setOpenItem} soldOut={isSoldOut(i.id)} />
                     ))}
                   </div>
                 </section>
@@ -295,7 +307,7 @@ export default function MenuPage() {
         </main>
 
         <aside className="side-cart">
-          <Cart onCheckout={startCheckout} />
+          <Cart onCheckout={startCheckout} paused={store.paused} soldOut={store.soldOut} />
         </aside>
       </div>
 
@@ -316,7 +328,7 @@ export default function MenuPage() {
       {openItem && <ItemSheet item={openItem} onClose={() => setOpenItem(null)} onAdded={showToast} />}
       {cartOpen && (
         <Sheet onClose={() => setCartOpen(false)} label="Carrinho">
-          <Cart onCheckout={startCheckout} />
+          <Cart onCheckout={startCheckout} paused={store.paused} soldOut={store.soldOut} />
         </Sheet>
       )}
       {checkoutOpen && <Checkout onClose={() => setCheckoutOpen(false)} table={table} />}

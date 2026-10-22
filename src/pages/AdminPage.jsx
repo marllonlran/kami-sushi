@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import { money, clock, timeAgo } from '../lib/format'
 import { isCloud, listOrders, subscribe, updateStatus, FLOW, STATUS, TYPE_LABEL, PAYMENT_LABEL } from '../lib/orders'
 import { signIn, signOut, useStaffSession } from '../lib/auth'
+import { useStoreSettings, updateStoreSettings } from '../lib/store'
 import { lineDetails } from '../components/Cart'
+import MenuManager from '../components/MenuManager'
 import Icon, { Logo, Wordmark, WhatsAppIcon } from '../components/Icon'
 
 
@@ -118,11 +120,40 @@ function Login() {
   )
 }
 
+// Mensagem pronta para o cliente, conforme a etapa do pedido.
+function whatsappLink(order) {
+  const digits = order.customer.phone?.replace(/\D/g, '')
+  if (!digits) return null
+  const first = order.customer.name.split(' ')[0]
+  const code = `#${order.code}`
+  const track = `${window.location.origin}/pedido/${order.id}`
+  let text
+  if (order.status === 'saiu') {
+    text = [
+      `Olá, ${first}! Seu pedido ${code} do Kami Sushi saiu para entrega 🛵`,
+      `Total: ${money(order.total)} (${PAYMENT_LABEL[order.payment]})`,
+      order.deliveryFee == null ? 'Taxa de entrega: a combinar por aqui.' : null,
+      order.changeFor ? `Levamos troco para ${money(order.changeFor)}.` : null,
+      `Acompanhe: ${track}`,
+    ]
+  } else if (order.status === 'pronto') {
+    text = [`Olá, ${first}! Seu pedido ${code} do Kami Sushi está pronto para retirada no balcão 🍣`, `Total: ${money(order.total)}`]
+  } else if (order.status === 'preparo') {
+    text = [`Olá, ${first}! Seu pedido ${code} do Kami Sushi já está em preparo 🍣`, `Acompanhe: ${track}`]
+  } else if (order.status === 'concluido') {
+    text = [`Olá, ${first}! Obrigado pelo pedido ${code} 🧡 Volte sempre ao Kami Sushi!`]
+  } else {
+    text = [`Olá, ${first}! Recebemos seu pedido ${code} no Kami Sushi 🍣`]
+  }
+  return `https://wa.me/55${digits}?text=${encodeURIComponent(text.filter(Boolean).join('\n'))}`
+}
+
 function OrderCard({ order, fresh, onAdvance, onCancel, onPrint }) {
   const next = nextStatus(order)
   const nl = NEXT_LABEL[order.status]
   const label = typeof nl === 'object' ? nl[order.type] : nl
-  const phone = order.customer.phone?.replace(/\D/g, '')
+  const wa = whatsappLink(order)
+  const notify = wa && (order.status === 'pronto' || order.status === 'saiu')
   return (
     <article className={`ticket ticket--${order.type} ${fresh ? 'is-fresh' : ''}`}>
       <header className="ticket__head">
@@ -171,14 +202,19 @@ function OrderCard({ order, fresh, onAdvance, onCancel, onPrint }) {
         </span>
         <strong>{money(order.total)}</strong>
       </div>
+      {notify && (
+        <a className="btn btn--wa btn--sm btn--block" href={wa} target="_blank" rel="noreferrer">
+          <WhatsAppIcon size={16} /> {order.status === 'saiu' ? 'Avisar: saiu para entrega' : 'Avisar: pronto para retirar'}
+        </a>
+      )}
       <footer className="ticket__actions">
         {next && (
           <button type="button" className="btn btn--primary btn--sm btn--grow" onClick={() => onAdvance(order, next)}>
             {label}
           </button>
         )}
-        {phone && (
-          <a className="icon-btn icon-btn--sm icon-btn--wa" href={`https://wa.me/55${phone}`} target="_blank" rel="noreferrer" aria-label="WhatsApp do cliente">
+        {wa && !notify && (
+          <a className="icon-btn icon-btn--sm icon-btn--wa" href={wa} target="_blank" rel="noreferrer" aria-label="WhatsApp do cliente" title="Mensagem para o cliente">
             <WhatsAppIcon size={16} />
           </a>
         )}
@@ -243,6 +279,8 @@ export default function AdminPage() {
   const { ready, authed } = useStaffSession()
   const [orders, setOrders] = useState([])
   const [view, setView] = useState('board')
+  const store = useStoreSettings()
+  const [pausing, setPausing] = useState(false)
   const [sound, setSound] = useState(true)
   const [fresh, setFresh] = useState(new Set())
   const [printing, setPrinting] = useState(null)
@@ -330,7 +368,10 @@ export default function AdminPage() {
               Em andamento
             </button>
             <button type="button" role="tab" aria-selected={view === 'done'} className={view === 'done' ? 'is-on' : ''} onClick={() => setView('done')}>
-              Finalizados hoje <span className="seg__count">{done.length}</span>
+              Finalizados <span className="seg__count">{done.length}</span>
+            </button>
+            <button type="button" role="tab" aria-selected={view === 'menu'} className={view === 'menu' ? 'is-on' : ''} onClick={() => setView('menu')}>
+              Cardápio {store.soldOut.length > 0 && <span className="seg__count">{store.soldOut.length}</span>}
             </button>
           </div>
           <div className="topbar__actions">
@@ -364,6 +405,30 @@ export default function AdminPage() {
       <main className="container container--wide admin__main">
         {offline && <div className="alert">Sem conexão com o servidor. Tentando de novo…</div>}
         {!isCloud && <div className="alert alert--info">Modo de teste: os pedidos ficam só neste navegador. Conecte o Supabase para receber pedidos de qualquer aparelho.</div>}
+        <div className={`store-bar ${store.paused ? 'is-paused' : ''}`}>
+          <span className="store-bar__dot" />
+          <div className="store-bar__text">
+            <strong>{store.paused ? 'Pedidos pausados' : 'Recebendo pedidos'}</strong>
+            <span>{store.paused ? 'Clientes não conseguem enviar pedidos agora.' : 'Clientes podem pedir no horário de funcionamento.'}</span>
+          </div>
+          <button
+            type="button"
+            className={`btn btn--sm ${store.paused ? 'btn--primary' : 'btn--ghost'}`}
+            disabled={pausing || !store.loaded}
+            onClick={async () => {
+              setPausing(true)
+              try {
+                await updateStoreSettings({ paused: !store.paused })
+              } catch (e) {
+                console.error(e)
+                alert('Não foi possível mudar. Verifique a internet e tente de novo.')
+              }
+              setPausing(false)
+            }}
+          >
+            {pausing ? 'Salvando…' : store.paused ? 'Voltar a receber' : 'Pausar pedidos'}
+          </button>
+        </div>
         <div className="stats">
           <div className="stat">
             <span className="stat__label">Novos</span>
@@ -379,7 +444,9 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {view === 'board' ? (
+        {view === 'menu' ? (
+          <MenuManager soldOut={store.soldOut} />
+        ) : view === 'board' ? (
           <div className="board">
             {COLUMNS.map((col) => {
               const list = orders.filter((o) => col.statuses.includes(o.status)).sort((a, b) => a.createdAt.localeCompare(b.createdAt))

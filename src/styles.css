@@ -1117,3 +1117,82 @@ a {
 .input.is-error { border-color: var(--red); }
 .alert { padding: 12px 14px; border-radius: var(--radius-sm); background: rgba(255, 122, 107, 0.1); border: 1px solid rgba(255, 122, 107, 0.4); color: var(--red); font-weight: 600; font-size: 14px; }
 .alert--info { background: var(--accent-soft); border-color: var(--accent-line); color: var(--accent-2); }
+
+/* ============ Pausa e esgotados ============ */
+.status-pill.is-paused { color: var(--accent); border-color: var(--accent-line); background: var(--accent-soft); }
+.closed-note--paused { color: var(--accent-2); background: var(--accent-soft); }
+.item-card.is-soldout, .feat-card.is-soldout { cursor: not-allowed; opacity: 0.55; }
+.item-card.is-soldout:hover, .feat-card.is-soldout:hover { border-color: var(--line); background: var(--surface); }
+.item-card.is-soldout .art, .feat-card.is-soldout .art { filter: grayscale(1); }
+.item-card.is-soldout .item-card__price { color: var(--muted); text-decoration: line-through; }
+.soldout-tag {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  border: 1px solid var(--line-2);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 800;
+}
+.cart-line.is-soldout .cart-line__name { color: var(--muted); text-decoration: line-through; }
+.cart-line__soldout { margin-top: 4px; color: var(--red); font-size: 13px; font-weight: 700; }
+
+/* Painel: barra de pausa */
+.store-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  background: rgba(95, 211, 141, 0.07);
+  border: 1px solid rgba(95, 211, 141, 0.3);
+}
+.store-bar.is-paused { background: var(--accent-soft); border-color: var(--accent-line); }
+.store-bar__dot { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 4px rgba(95, 211, 141, 0.18); }
+.store-bar.is-paused .store-bar__dot { background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+.store-bar__text { flex: 1; min-width: 0; display: grid; }
+.store-bar__text strong { font-size: 15px; }
+.store-bar__text span { color: var(--muted); font-size: 13px; }
+
+/* Painel: aba Cardápio */
+.menu-manager { display: grid; gap: 18px; }
+.menu-manager__top { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.menu-manager__top .search { flex: 0 1 320px; }
+.mm-section { display: grid; gap: 10px; }
+.mm-section__title { display: flex; align-items: center; gap: 8px; font-family: var(--display); font-size: 20px; font-weight: 800; }
+.mm-section--soldout { padding: 14px; border-radius: var(--radius); background: rgba(255, 122, 107, 0.06); border: 1px solid rgba(255, 122, 107, 0.3); }
+.mm-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.mm-chip { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 999px; border: 1px solid rgba(255, 122, 107, 0.4); background: var(--surface); color: var(--text); font-weight: 700; font-size: 13px; }
+.mm-chip svg { color: var(--red); }
+.mm-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.mm-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 78px;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  text-align: left;
+}
+.mm-row:hover { border-color: var(--line-2); }
+.mm-row:disabled { opacity: 0.6; cursor: progress; }
+.mm-row__name { font-weight: 700; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mm-row.is-out .mm-row__name { color: var(--muted); text-decoration: line-through; }
+.mm-row__state { font-size: 12px; font-weight: 800; color: var(--green); }
+.mm-row.is-out .mm-row__state { color: var(--red); }
+.mm-switch { position: relative; width: 40px; height: 22px; border-radius: 999px; background: rgba(95, 211, 141, 0.35); transition: background 0.2s; }
+.mm-switch__knob { position: absolute; top: 3px; left: 21px; width: 16px; height: 16px; border-radius: 50%; background: var(--text); transition: left 0.2s; }
+.mm-switch.is-out { background: var(--surface-3); }
+.mm-switch.is-out .mm-switch__knob { left: 3px; background: var(--dim); }
+
+@media (max-width: 720px) {
+  .admin .seg button { padding: 0 8px; }
+  .store-bar { flex-wrap: wrap; }
+  .store-bar .btn { width: 100%; }
+}
