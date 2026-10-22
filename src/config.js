@@ -4,11 +4,11 @@ export const STORE = {
   tagline: 'Culinária japonesa feita na hora',
   whatsapp: '5583993703432',
   whatsappDisplay: '(83) 99370-3432',
-  pixKey: '83993703432',
-  pixKeyDisplay: '(83) 99370-3432',
+  pixKey: '83991469211',
+  pixKeyDisplay: '(83) 99146-9211',
   pixKeyType: 'Telefone',
   // Chave no formato do código Pix (telefone com +55).
-  pixKeyEmv: '+5583993703432',
+  pixKeyEmv: '+5583991469211',
   // Nome do titular e cidade da conta Pix, como aparecem no banco.
   // Enquanto estiverem vazios, o site mostra só a chave (sem QR Code).
   pixName: '',
