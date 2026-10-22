@@ -11,8 +11,8 @@ export const STORE = {
   pixKeyEmv: '+5583991469211',
   // Nome do titular e cidade da conta Pix, como aparecem no banco.
   // Enquanto estiverem vazios, o site mostra só a chave (sem QR Code).
-  pixName: '',
-  pixCity: '',
+  pixName: 'Brenda da Silva Andrade',
+  pixCity: 'Ingá',
   tables: 12,
   timeZone: 'America/Fortaleza',
   // Abre todos os dias das 19h às 23h.
