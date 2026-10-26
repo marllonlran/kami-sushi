@@ -2,13 +2,13 @@
 // Regra de unidades: o preço do cardápio é o da porção cheia (8 ou 10 un.);
 // a meia porção (4 ou 5 un.) custa metade.
 
-const pieces = (price, half, full) => [
-  { id: `${half}`, label: `${half} un.`, price: price / 2 },
-  { id: `${full}`, label: `${full} un.`, price },
+const pecas = (preco, metade, completo) => [
+  { id: `${metade}`, label: `${metade} un.`, price: preco / 2 },
+  { id: `${completo}`, label: `${completo} un.`, price: preco },
 ]
-const p4 = (price) => pieces(price, 4, 8)
-const p5 = (price) => pieces(price, 5, 10)
-const sizes = (p, g) => [
+const p4 = (preco) => pecas(preco, 4, 8)
+const p5 = (preco) => pecas(preco, 5, 10)
+const tamanhos = (p, g) => [
   { id: 'P', label: 'Pequeno (P)', price: p },
   { id: 'G', label: 'Grande (G)', price: g },
 ]
@@ -19,13 +19,13 @@ const SALMAO_PREPARO = {
   choices: ['Fresco', 'Flambado'],
 }
 
-const BURGER_EXTRAS = [
+const ADICIONAIS_BURGER = [
   { id: 'carne', label: 'Carne bovina', price: 7 },
   { id: 'bacon', label: 'Bacon', price: 5 },
   { id: 'cheddar', label: 'Cheddar', price: 5 },
 ]
 
-export const CATEGORIES = [
+export const CATEGORIAS = [
   {
     id: 'entradas',
     name: 'Entradas',
@@ -244,12 +244,12 @@ export const CATEGORIES = [
     name: 'Pratos Quentes',
     jp: '温かい料理',
     items: [
-      { id: 'yakissoba-misto', name: 'Yakissoba Misto', desc: 'Carne, frango, macarrão e legumes', variants: sizes(15, 30) },
-      { id: 'yakissoba-especial', name: 'Yakissoba Especial', desc: 'Carne, frango, camarão, macarrão e legumes', variants: sizes(25, 50) },
-      { id: 'yakissoba-frutos-mar', name: 'Yakissoba de Frutos do Mar', desc: 'Camarão, salmão, macarrão e legumes', variants: sizes(20, 40) },
-      { id: 'parmegiana-frango', name: 'Parmegiana de Frango', desc: 'Arroz temperado, batata frita e frango empanado ao molho', variants: sizes(30, 50) },
-      { id: 'parmegiana-carne', name: 'Parmegiana de Carne', desc: 'Arroz temperado, batata frita e carne de boi empanada ao molho', variants: sizes(35, 55) },
-      { id: 'parmegiana-camarao', name: 'Parmegiana de Camarão', desc: 'Arroz temperado, batata frita e camarão empanado ao molho', variants: sizes(40, 60) },
+      { id: 'yakissoba-misto', name: 'Yakissoba Misto', desc: 'Carne, frango, macarrão e legumes', variants: tamanhos(15, 30) },
+      { id: 'yakissoba-especial', name: 'Yakissoba Especial', desc: 'Carne, frango, camarão, macarrão e legumes', variants: tamanhos(25, 50) },
+      { id: 'yakissoba-frutos-mar', name: 'Yakissoba de Frutos do Mar', desc: 'Camarão, salmão, macarrão e legumes', variants: tamanhos(20, 40) },
+      { id: 'parmegiana-frango', name: 'Parmegiana de Frango', desc: 'Arroz temperado, batata frita e frango empanado ao molho', variants: tamanhos(30, 50) },
+      { id: 'parmegiana-carne', name: 'Parmegiana de Carne', desc: 'Arroz temperado, batata frita e carne de boi empanada ao molho', variants: tamanhos(35, 55) },
+      { id: 'parmegiana-camarao', name: 'Parmegiana de Camarão', desc: 'Arroz temperado, batata frita e camarão empanado ao molho', variants: tamanhos(40, 60) },
     ],
   },
   {
@@ -268,15 +268,15 @@ export const CATEGORIES = [
     name: 'Lanches',
     jp: 'バーガー',
     items: [
-      { id: 'classico-burguer', name: 'Clássico Burguer', desc: 'Blend bovino, cheddar fatiado, alface, tomate e pão brioche', price: 15, extras: BURGER_EXTRAS },
-      { id: 'tradicional-burguer', name: 'Tradicional Burguer', desc: 'Blend bovino, mussarela, alface, tomate e pão brioche', price: 15, extras: BURGER_EXTRAS },
-      { id: 'bacon-crock', name: 'Bacon Crock', desc: 'Blend bovino, creme de cheddar, bacon crocante e pão brioche', price: 17, extras: BURGER_EXTRAS },
-      { id: 'cheddar-burguer', name: 'Cheddar Burguer', desc: 'Blend bovino, creme de cheddar, farofa de bacon e pão brioche', price: 17, extras: BURGER_EXTRAS },
-      { id: 'super-burguer', name: 'Super Burguer', desc: 'Blend bovino, creme de cheddar e batata no meio do pão brioche', price: 20, extras: BURGER_EXTRAS },
-      { id: 'onion-burguer', name: 'Onion Burguer', desc: 'Blend bovino, creme de cheddar, onion e pão brioche', price: 22, extras: BURGER_EXTRAS },
-      { id: 'nordestino-burguer', name: 'Nordestino Burguer', desc: 'Blend bovino, creme de cheddar, cebola caramelizada, carne, cebolinha e pão brioche', price: 25, extras: BURGER_EXTRAS, featured: true },
-      { id: 'queijo-crock', name: 'Queijo Crock', desc: 'Blend bovino, creme de cheddar, blend de queijo empanado (coalho e mussarela), bacon e geleia de pimenta', price: 25, extras: BURGER_EXTRAS },
-      { id: 'cheddar-duplo', name: 'Cheddar Duplo', desc: 'Blend bovino duplo, farofa de bacon, cheddar e pão brioche', price: 32, extras: BURGER_EXTRAS },
+      { id: 'classico-burguer', name: 'Clássico Burguer', desc: 'Blend bovino, cheddar fatiado, alface, tomate e pão brioche', price: 15, extras: ADICIONAIS_BURGER },
+      { id: 'tradicional-burguer', name: 'Tradicional Burguer', desc: 'Blend bovino, mussarela, alface, tomate e pão brioche', price: 15, extras: ADICIONAIS_BURGER },
+      { id: 'bacon-crock', name: 'Bacon Crock', desc: 'Blend bovino, creme de cheddar, bacon crocante e pão brioche', price: 17, extras: ADICIONAIS_BURGER },
+      { id: 'cheddar-burguer', name: 'Cheddar Burguer', desc: 'Blend bovino, creme de cheddar, farofa de bacon e pão brioche', price: 17, extras: ADICIONAIS_BURGER },
+      { id: 'super-burguer', name: 'Super Burguer', desc: 'Blend bovino, creme de cheddar e batata no meio do pão brioche', price: 20, extras: ADICIONAIS_BURGER },
+      { id: 'onion-burguer', name: 'Onion Burguer', desc: 'Blend bovino, creme de cheddar, onion e pão brioche', price: 22, extras: ADICIONAIS_BURGER },
+      { id: 'nordestino-burguer', name: 'Nordestino Burguer', desc: 'Blend bovino, creme de cheddar, cebola caramelizada, carne, cebolinha e pão brioche', price: 25, extras: ADICIONAIS_BURGER, featured: true },
+      { id: 'queijo-crock', name: 'Queijo Crock', desc: 'Blend bovino, creme de cheddar, blend de queijo empanado (coalho e mussarela), bacon e geleia de pimenta', price: 25, extras: ADICIONAIS_BURGER },
+      { id: 'cheddar-duplo', name: 'Cheddar Duplo', desc: 'Blend bovino duplo, farofa de bacon, cheddar e pão brioche', price: 32, extras: ADICIONAIS_BURGER },
       { id: 'combo-cheddar-familia', name: 'Combo Cheddar Família', desc: '3 cheddar burguer + batata frita', price: 66 },
     ],
   },
@@ -316,20 +316,20 @@ export const CATEGORIES = [
   },
 ]
 
-export const ALL_ITEMS = CATEGORIES.flatMap((c) =>
+export const TODOS_ITENS = CATEGORIAS.flatMap((c) =>
   c.items.map((item) => ({ ...item, categoryId: c.id, categoryName: c.name })),
 )
 
 // Sugestões do carrinho ("Que tal adicionar?"), por grupo e em ordem de preferência.
 // Só itens sem escolhas (porção, sabor...), para entrar no carrinho com um toque.
-export const SUGGESTIONS = [
+export const SUGESTOES = [
   { group: 'bebidas', items: ['coca-lata', 'guarana-lata', 'h2o-limao'] },
   { group: 'doces', items: ['hot-morango-nutella', 'hot-banana-nutella'] },
   { group: 'petiscos', items: ['batata-frita', 'batata-cheddar-bacon'] },
 ]
 
 // Menor preço do item (para exibir "a partir de").
-export function basePrice(item) {
+export function precoBase(item) {
   if (item.variants) return Math.min(...item.variants.map((v) => v.price))
   return item.price
 }

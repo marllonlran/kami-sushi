@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { STORE } from '../config'
-import { money, clock } from '../lib/format'
-import { getOrder, subscribe, FLOW, STATUS, TYPE_LABEL, PAYMENT_LABEL } from '../lib/orders'
-import { lineDetails } from '../components/Cart'
-import Icon, { Logo, WhatsAppIcon } from '../components/Icon'
-import PixBox from '../components/PixBox'
+import { LOJA } from '../configuracao'
+import { moeda, horaMinuto } from '../lib/formatacao'
+import { obterPedido, assinar, FLUXO, STATUS, ROTULO_TIPO, ROTULO_PAGAMENTO } from '../lib/pedidos'
+import { detalhesLinha } from '../componentes/Carrinho'
+import Icone, { Logo, IconeWhatsApp } from '../componentes/Icone'
+import CaixaPix from '../componentes/CaixaPix'
 
-const STEP_TEXT = {
+const TEXTO_ETAPA = {
   entrega: {
     novo: 'Recebemos seu pedido e já vamos confirmar.',
     preparo: 'Nossa cozinha está preparando tudo com carinho.',
@@ -28,22 +28,22 @@ const STEP_TEXT = {
   },
 }
 
-const STEP_LABEL = { novo: 'Recebido', preparo: 'Em preparo', pronto: 'Pronto', saiu: 'Saiu p/ entrega', concluido: 'Concluído' }
+const ROTULO_ETAPA = { novo: 'Recebido', preparo: 'Em preparo', pronto: 'Pronto', saiu: 'Saiu p/ entrega', concluido: 'Concluído' }
 
-export default function OrderPage() {
+export default function PaginaPedido() {
   const { id } = useParams()
-  const [order, setOrder] = useState(undefined)
+  const [pedido, setPedido] = useState(undefined)
 
   useEffect(() => {
     // Em caso de falha de rede, mantém o que já está na tela e tenta de novo na próxima atualização.
-    const load = () => getOrder(id).then(setOrder, (e) => console.error(e))
-    load()
-    return subscribe(load)
+    const carregar = () => obterPedido(id).then(setPedido, (e) => console.error(e))
+    carregar()
+    return assinar(carregar)
   }, [id])
 
-  if (order === undefined) return <div className="page page--center" />
+  if (pedido === undefined) return <div className="page page--center" />
 
-  if (!order) {
+  if (!pedido) {
     return (
       <div className="page page--center">
         <div className="empty-state">
@@ -58,42 +58,42 @@ export default function OrderPage() {
     )
   }
 
-  const flow = FLOW[order.type]
-  const cancelled = order.status === 'cancelado'
-  const current = flow.indexOf(order.status)
-  const waText = encodeURIComponent(`Olá! Sobre o pedido #${order.code} (${order.customer.name})`)
-  const waPix = encodeURIComponent(`Olá! Segue o comprovante do Pix do pedido #${order.code}, no valor de ${money(order.total)}.`)
+  const fluxo = FLUXO[pedido.type]
+  const cancelados = pedido.status === 'cancelado'
+  const etapaAtual = fluxo.indexOf(pedido.status)
+  const textoWhatsapp = encodeURIComponent(`Olá! Sobre o pedido #${pedido.code} (${pedido.customer.name})`)
+  const waPix = encodeURIComponent(`Olá! Segue o comprovante do Pix do pedido #${pedido.code}, no valor de ${moeda(pedido.total)}.`)
 
   return (
     <div className="page">
       <header className="topbar">
         <div className="topbar__inner container container--narrow">
           <Link to="/" className="icon-btn" aria-label="Voltar ao cardápio">
-            <Icon name="back" />
+            <Icone name="back" />
           </Link>
-          <span className="topbar__title">Pedido #{order.code}</span>
-          <a className="icon-btn icon-btn--wa" href={`https://wa.me/${STORE.whatsapp}?text=${waText}`} target="_blank" rel="noreferrer" aria-label="Falar no WhatsApp">
-            <WhatsAppIcon size={20} />
+          <span className="topbar__title">Pedido #{pedido.code}</span>
+          <a className="icon-btn icon-btn--wa" href={`https://wa.me/${LOJA.whatsapp}?text=${textoWhatsapp}`} target="_blank" rel="noreferrer" aria-label="Falar no WhatsApp">
+            <IconeWhatsApp size={20} />
           </a>
         </div>
       </header>
 
       <main className="container container--narrow order-page">
-        <section className={`order-hero ${cancelled ? 'is-cancelled' : ''}`}>
+        <section className={`order-hero ${cancelados ? 'is-cancelled' : ''}`}>
           <p className="order-hero__eyebrow">
-            {order.table ? `Mesa ${order.table}` : TYPE_LABEL[order.type]} · feito às {clock(order.createdAt)}
+            {pedido.table ? `Mesa ${pedido.table}` : ROTULO_TIPO[pedido.type]} · feito às {horaMinuto(pedido.createdAt)}
           </p>
-          <h1 className="order-hero__title">{cancelled ? 'Pedido cancelado' : STATUS[order.status].label}</h1>
+          <h1 className="order-hero__title">{cancelados ? 'Pedido cancelado' : STATUS[pedido.status].label}</h1>
           <p className="order-hero__text">
-            {cancelled ? 'Fale com a gente pelo WhatsApp se tiver alguma dúvida.' : STEP_TEXT[order.type][order.status]}
+            {cancelados ? 'Fale com a gente pelo WhatsApp se tiver alguma dúvida.' : TEXTO_ETAPA[pedido.type][pedido.status]}
           </p>
 
-          {!cancelled && (
+          {!cancelados && (
             <ol className="timeline">
-              {flow.map((s, i) => (
-                <li key={s} className={`timeline__step ${i < current ? 'is-done' : ''} ${i === current ? 'is-current' : ''}`}>
-                  <span className="timeline__dot">{i < current ? <Icon name="check" size={14} stroke={3} /> : null}</span>
-                  <span className="timeline__label">{STEP_LABEL[s]}</span>
+              {fluxo.map((s, i) => (
+                <li key={s} className={`timeline__step ${i < etapaAtual ? 'is-done' : ''} ${i === etapaAtual ? 'is-current' : ''}`}>
+                  <span className="timeline__dot">{i < etapaAtual ? <Icone name="check" size={14} stroke={3} /> : null}</span>
+                  <span className="timeline__label">{ROTULO_ETAPA[s]}</span>
                 </li>
               ))}
             </ol>
@@ -103,12 +103,12 @@ export default function OrderPage() {
           </p>
         </section>
 
-        {order.payment === 'pix' && !cancelled && (
+        {pedido.payment === 'pix' && !cancelados && (
           <section className="card">
             <h2 className="card__title">Pagamento via Pix</h2>
-            <PixBox amount={order.total} />
-            <a className="btn btn--wa btn--block" href={`https://wa.me/${STORE.whatsapp}?text=${waPix}`} target="_blank" rel="noreferrer">
-              <WhatsAppIcon size={18} /> Enviar comprovante
+            <CaixaPix amount={pedido.total} />
+            <a className="btn btn--wa btn--block" href={`https://wa.me/${LOJA.whatsapp}?text=${waPix}`} target="_blank" rel="noreferrer">
+              <IconeWhatsApp size={18} /> Enviar comprovante
             </a>
           </section>
         )}
@@ -116,8 +116,8 @@ export default function OrderPage() {
         <section className="card">
           <h2 className="card__title">Resumo</h2>
           <ul className="summary-list">
-            {order.items.map((l, i) => {
-              const d = lineDetails(l)
+            {pedido.items.map((l, i) => {
+              const d = detalhesLinha(l)
               return (
                 <li key={i}>
                   <span className="summary-list__qty">{l.qty}×</span>
@@ -126,24 +126,24 @@ export default function OrderPage() {
                     {d.length > 0 && <small>{d.join(' · ')}</small>}
                     {l.note && <small className="cart-line__note">“{l.note}”</small>}
                   </span>
-                  <span>{money(l.qty * l.unitPrice)}</span>
+                  <span>{moeda(l.qty * l.unitPrice)}</span>
                 </li>
               )
             })}
           </ul>
           <div className="sum-row">
             <span>Subtotal</span>
-            <span>{money(order.subtotal)}</span>
+            <span>{moeda(pedido.subtotal)}</span>
           </div>
-          {order.type === 'entrega' && (
+          {pedido.type === 'entrega' && (
             <div className="sum-row">
               <span>Taxa de entrega</span>
-              <span>{typeof order.deliveryFee === 'number' ? money(order.deliveryFee) : 'A combinar'}</span>
+              <span>{typeof pedido.deliveryFee === 'number' ? moeda(pedido.deliveryFee) : 'A combinar'}</span>
             </div>
           )}
           <div className="sum-row sum-row--total">
             <span>Total</span>
-            <strong>{money(order.total)}</strong>
+            <strong>{moeda(pedido.total)}</strong>
           </div>
         </section>
 
@@ -151,26 +151,26 @@ export default function OrderPage() {
           <h2 className="card__title">Detalhes</h2>
           <dl className="details">
             <dt>Nome</dt>
-            <dd>{order.customer.name}</dd>
-            {order.address && (
+            <dd>{pedido.customer.name}</dd>
+            {pedido.address && (
               <>
                 <dt>Endereço</dt>
                 <dd>
-                  {order.address.street}, {order.address.number}
-                  {order.address.complement ? ` · ${order.address.complement}` : ''} · {order.address.district}{order.address.cityName ? ` · ${order.address.cityName}` : ''}
-                  {order.address.reference && <small>Ref.: {order.address.reference}</small>}
+                  {pedido.address.street}, {pedido.address.number}
+                  {pedido.address.complement ? ` · ${pedido.address.complement}` : ''} · {pedido.address.district}{pedido.address.cityName ? ` · ${pedido.address.cityName}` : ''}
+                  {pedido.address.reference && <small>Ref.: {pedido.address.reference}</small>}
                 </dd>
               </>
             )}
             <dt>Pagamento</dt>
             <dd>
-              {PAYMENT_LABEL[order.payment]}
-              {order.changeFor ? ` · troco para ${money(order.changeFor)}` : ''}
+              {ROTULO_PAGAMENTO[pedido.payment]}
+              {pedido.changeFor ? ` · troco para ${moeda(pedido.changeFor)}` : ''}
             </dd>
-            {order.notes && (
+            {pedido.notes && (
               <>
                 <dt>Observação</dt>
-                <dd>{order.notes}</dd>
+                <dd>{pedido.notes}</dd>
               </>
             )}
           </dl>

@@ -1,5 +1,5 @@
 // Dados da loja. Edite aqui para mudar horário, Pix, mesas etc.
-export const STORE = {
+export const LOJA = {
   name: 'Kami Sushi',
   tagline: 'Culinária japonesa feita na hora',
   whatsapp: '5583993703432',

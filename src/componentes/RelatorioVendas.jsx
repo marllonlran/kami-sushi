@@ -1,78 +1,78 @@
 import { useEffect, useMemo, useState } from 'react'
-import { money } from '../lib/format'
-import { listOrdersSince, TYPE_LABEL, PAYMENT_LABEL } from '../lib/orders'
-import { addDays, dayKey, dayLabel, daysUntilToday, hourOf, startOfDay, weekday } from '../lib/dates'
-import Icon from './Icon'
+import { moeda } from '../lib/formatacao'
+import { listarPedidosDesde, ROTULO_TIPO, ROTULO_PAGAMENTO } from '../lib/pedidos'
+import { somarDias, chaveDia, rotuloDia, diasAteHoje, horaDe, inicioDoDia, diaSemana } from '../lib/datas'
+import Icone from './Icone'
 
-const PERIODS = [
+const PERIODOS = [
   { id: 'hoje', label: 'Hoje' },
   { id: '7d', label: '7 dias' },
   { id: '30d', label: '30 dias' },
   { id: 'mes', label: 'Este mês' },
 ]
 
-function periodStart(id) {
-  const today = startOfDay(dayKey(new Date()))
-  if (id === '7d') return addDays(today, -6)
-  if (id === '30d') return addDays(today, -29)
-  if (id === 'mes') return startOfDay(`${dayKey(new Date()).slice(0, 7)}-01`)
-  return today
+function inicioPeriodo(id) {
+  const hoje = inicioDoDia(chaveDia(new Date()))
+  if (id === '7d') return somarDias(hoje, -6)
+  if (id === '30d') return somarDias(hoje, -29)
+  if (id === 'mes') return inicioDoDia(`${chaveDia(new Date()).slice(0, 7)}-01`)
+  return hoje
 }
 
-function summarize(orders, from) {
-  const valid = orders.filter((o) => o.status !== 'cancelado')
-  const revenue = valid.reduce((s, o) => s + o.total, 0)
+function resumir(pedidos, inicio) {
+  const valido = pedidos.filter((o) => o.status !== 'cancelado')
+  const faturamento = valido.reduce((s, o) => s + o.total, 0)
 
-  const days = daysUntilToday(from).map((k) => ({ key: k, revenue: 0, count: 0 }))
-  const dayIndex = Object.fromEntries(days.map((d, i) => [d.key, i]))
-  const hours = {}
-  const items = {}
-  const types = {}
-  const payments = {}
+  const dias = diasAteHoje(inicio).map((k) => ({ key: k, revenue: 0, count: 0 }))
+  const indiceDia = Object.fromEntries(dias.map((d, i) => [d.key, i]))
+  const horas = {}
+  const itens = {}
+  const tipos = {}
+  const pagamentos = {}
 
-  for (const o of valid) {
-    const d = days[dayIndex[dayKey(o.createdAt)]]
+  for (const o of valido) {
+    const d = dias[indiceDia[chaveDia(o.createdAt)]]
     if (d) {
       d.revenue += o.total
       d.count += 1
     }
-    const h = hourOf(o.createdAt)
-    hours[h] = (hours[h] || 0) + 1
-    types[o.type] = (types[o.type] || 0) + o.total
-    payments[o.payment] = (payments[o.payment] || 0) + o.total
+    const h = horaDe(o.createdAt)
+    horas[h] = (horas[h] || 0) + 1
+    tipos[o.type] = (tipos[o.type] || 0) + o.total
+    pagamentos[o.payment] = (pagamentos[o.payment] || 0) + o.total
     for (const l of o.items) {
-      const it = (items[l.name] ||= { name: l.name, qty: 0, revenue: 0 })
+      const it = (itens[l.name] ||= { name: l.name, qty: 0, revenue: 0 })
       it.qty += l.qty
       it.revenue += l.qty * l.unitPrice
     }
   }
 
   // Faixa de horas: sempre do horário de funcionamento, ampliada se houver pedidos fora dele.
-  const seen = Object.keys(hours).map(Number)
-  const lo = Math.min(19, ...seen)
-  const hi = Math.max(22, ...seen)
-  const hourList = []
-  for (let h = lo; h <= hi; h++) hourList.push({ hour: h, count: hours[h] || 0 })
+  const horasComVenda = Object.keys(horas).map(Number)
+  const lo = Math.min(19, ...horasComVenda)
+  const hi = Math.max(22, ...horasComVenda)
+  const listaHoras = []
+  for (let h = lo; h <= hi; h++) listaHoras.push({ hour: h, count: horas[h] || 0 })
 
   return {
-    revenue,
-    count: valid.length,
-    ticket: valid.length ? revenue / valid.length : 0,
-    cancelled: orders.length - valid.length,
-    days,
-    hours: hourList,
-    topItems: Object.values(items).sort((a, b) => b.qty - a.qty || b.revenue - a.revenue).slice(0, 10),
-    types: Object.entries(types).sort((a, b) => b[1] - a[1]),
-    payments: Object.entries(payments).sort((a, b) => b[1] - a[1]),
+    revenue: faturamento,
+    count: valido.length,
+    ticket: valido.length ? faturamento / valido.length : 0,
+    cancelled: pedidos.length - valido.length,
+    days: dias,
+    hours: listaHoras,
+    topItems: Object.values(itens).sort((a, b) => b.qty - a.qty || b.revenue - a.revenue).slice(0, 10),
+    types: Object.entries(tipos).sort((a, b) => b[1] - a[1]),
+    payments: Object.entries(pagamentos).sort((a, b) => b[1] - a[1]),
   }
 }
 
 // Colunas verticais (uma série, uma cor). O maior valor ganha rótulo; os demais aparecem ao passar o mouse.
-function Columns({ data, valueOf, labelOf, subOf, format, ariaLabel }) {
+function Colunas({ data, valueOf, labelOf, subOf, format, ariaLabel }) {
   const max = Math.max(...data.map(valueOf), 0)
-  const peak = data.findIndex((d) => valueOf(d) === max && max > 0)
+  const pico = data.findIndex((d) => valueOf(d) === max && max > 0)
   // Muitas colunas (30 dias): rótulo só a cada 5, para não amontoar.
-  const showLabel = (i) => data.length <= 10 || i % 5 === 0 || i === data.length - 1
+  const mostrarRotulo = (i) => data.length <= 10 || i % 5 === 0 || i === data.length - 1
   return (
     <div className={`cols ${data.length > 10 ? 'cols--dense' : ''}`} role="img" aria-label={ariaLabel}>
       {data.map((d, i) => {
@@ -81,10 +81,10 @@ function Columns({ data, valueOf, labelOf, subOf, format, ariaLabel }) {
           <div key={i} className="cols__col" tabIndex={0} data-tip={`${labelOf(d)}: ${format(v)}`}>
             <div className="cols__track">
               <div className="cols__bar" style={{ height: max ? `${(v / max) * 100}%` : 0 }}>
-                {i === peak && <span className="cols__peak">{format(v)}</span>}
+                {i === pico && <span className="cols__peak">{format(v)}</span>}
               </div>
             </div>
-            <span className="cols__label">{showLabel(i) ? labelOf(d) : ' '}</span>
+            <span className="cols__label">{mostrarRotulo(i) ? labelOf(d) : ' '}</span>
             {subOf && <span className="cols__sub">{subOf(d)}</span>}
           </div>
         )
@@ -94,7 +94,7 @@ function Columns({ data, valueOf, labelOf, subOf, format, ariaLabel }) {
 }
 
 // Barras horizontais com rótulo e valor em texto (a cor só reforça).
-function BarList({ rows, max }) {
+function ListaBarras({ rows, max }) {
   return (
     <ul className="barlist">
       {rows.map((r) => (
@@ -110,56 +110,56 @@ function BarList({ rows, max }) {
   )
 }
 
-export default function SalesReport() {
-  const [period, setPeriod] = useState('hoje')
-  const [orders, setOrders] = useState(null)
-  const [error, setError] = useState(false)
-  const [reload, setReload] = useState(0)
-  const from = useMemo(() => periodStart(period), [period, reload])
+export default function RelatorioVendas() {
+  const [periodo, setPeriodo] = useState('hoje')
+  const [pedidos, setPedidos] = useState(null)
+  const [erro, setErro] = useState(false)
+  const [recarregar, setRecarregar] = useState(0)
+  const inicio = useMemo(() => inicioPeriodo(periodo), [periodo, recarregar])
 
   useEffect(() => {
-    let alive = true
-    setOrders(null)
-    setError(false)
-    listOrdersSince(from).then(
-      (list) => alive && setOrders(list),
+    let emExecucao = true
+    setPedidos(null)
+    setErro(false)
+    listarPedidosDesde(inicio).then(
+      (lista) => emExecucao && setPedidos(lista),
       (e) => {
         console.error(e)
-        if (alive) setError(true)
+        if (emExecucao) setErro(true)
       },
     )
     return () => {
-      alive = false
+      emExecucao = false
     }
-  }, [from])
+  }, [inicio])
 
-  const r = useMemo(() => (orders ? summarize(orders, from) : null), [orders, from])
-  const multiDay = period !== 'hoje'
+  const r = useMemo(() => (pedidos ? resumir(pedidos, inicio) : null), [pedidos, inicio])
+  const variosDias = periodo !== 'hoje'
 
   return (
     <div className="report">
       <div className="report__filters">
         <div className="seg" role="tablist" aria-label="Período">
-          {PERIODS.map((p) => (
-            <button key={p.id} type="button" role="tab" aria-selected={period === p.id} className={period === p.id ? 'is-on' : ''} onClick={() => setPeriod(p.id)}>
+          {PERIODOS.map((p) => (
+            <button key={p.id} type="button" role="tab" aria-selected={periodo === p.id} className={periodo === p.id ? 'is-on' : ''} onClick={() => setPeriodo(p.id)}>
               {p.label}
             </button>
           ))}
         </div>
-        <button type="button" className="btn btn--ghost btn--sm" onClick={() => setReload((n) => n + 1)}>
+        <button type="button" className="btn btn--ghost btn--sm" onClick={() => setRecarregar((n) => n + 1)}>
           Atualizar
         </button>
       </div>
 
-      {error && <div className="alert">Não foi possível carregar o relatório. Verifique a internet e toque em Atualizar.</div>}
-      {!r && !error && <p className="column__empty">Carregando…</p>}
+      {erro && <div className="alert">Não foi possível carregar o relatório. Verifique a internet e toque em Atualizar.</div>}
+      {!r && !erro && <p className="column__empty">Carregando…</p>}
 
       {r && (
         <>
           <div className="stats stats--4">
             <div className="stat">
               <span className="stat__label">Vendas</span>
-              <span className="stat__value">{money(r.revenue)}</span>
+              <span className="stat__value">{moeda(r.revenue)}</span>
             </div>
             <div className="stat">
               <span className="stat__label">Pedidos</span>
@@ -167,7 +167,7 @@ export default function SalesReport() {
             </div>
             <div className="stat">
               <span className="stat__label">Ticket médio</span>
-              <span className="stat__value">{money(r.ticket)}</span>
+              <span className="stat__value">{moeda(r.ticket)}</span>
             </div>
             <div className="stat">
               <span className="stat__label">Cancelados</span>
@@ -177,21 +177,21 @@ export default function SalesReport() {
 
           {r.count === 0 ? (
             <div className="report-card report-card--empty">
-              <Icon name="receipt" size={28} stroke={1.6} />
+              <Icone name="receipt" size={28} stroke={1.6} />
               <p>Nenhum pedido neste período ainda.</p>
             </div>
           ) : (
             <>
               <div className="report-grid">
-                {multiDay && (
+                {variosDias && (
                   <section className="report-card report-card--wide">
                     <h3 className="report-card__title">Vendas por dia</h3>
-                    <Columns
+                    <Colunas
                       data={r.days}
                       valueOf={(d) => d.revenue}
-                      labelOf={(d) => dayLabel(d.key)}
-                      subOf={r.days.length <= 7 ? (d) => weekday(d.key) : null}
-                      format={money}
+                      labelOf={(d) => rotuloDia(d.key)}
+                      subOf={r.days.length <= 7 ? (d) => diaSemana(d.key) : null}
+                      format={moeda}
                       ariaLabel="Vendas por dia"
                     />
                   </section>
@@ -199,7 +199,7 @@ export default function SalesReport() {
                 <section className="report-card">
                   <h3 className="report-card__title">Horários de pico</h3>
                   <p className="report-card__hint">Pedidos por hora</p>
-                  <Columns
+                  <Colunas
                     data={r.hours}
                     valueOf={(h) => h.count}
                     labelOf={(h) => `${h.hour}h`}
@@ -209,11 +209,11 @@ export default function SalesReport() {
                 </section>
                 <section className="report-card">
                   <h3 className="report-card__title">Como receberam</h3>
-                  <BarList max={r.types[0]?.[1]} rows={r.types.map(([k, v]) => ({ label: TYPE_LABEL[k], value: v, display: money(v) }))} />
+                  <ListaBarras max={r.types[0]?.[1]} rows={r.types.map(([k, v]) => ({ label: ROTULO_TIPO[k], value: v, display: moeda(v) }))} />
                   <h3 className="report-card__title report-card__title--gap">Pagamento</h3>
-                  <BarList
+                  <ListaBarras
                     max={r.payments[0]?.[1]}
-                    rows={r.payments.map(([k, v]) => ({ label: PAYMENT_LABEL[k].replace(' (maquininha)', ''), value: v, display: money(v) }))}
+                    rows={r.payments.map(([k, v]) => ({ label: ROTULO_PAGAMENTO[k].replace(' (maquininha)', ''), value: v, display: moeda(v) }))}
                   />
                 </section>
               </div>
@@ -238,7 +238,7 @@ export default function SalesReport() {
                           <span className="top-table__bar" style={{ width: `${(it.qty / r.topItems[0].qty) * 100}%` }} />
                         </td>
                         <td className="num">{it.qty}</td>
-                        <td className="num">{money(it.revenue)}</td>
+                        <td className="num">{moeda(it.revenue)}</td>
                       </tr>
                     ))}
                   </tbody>

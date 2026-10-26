@@ -16,8 +16,8 @@ publishable do Supabase. Sem ele, o site roda em modo de teste local
 
 ## Onde mudar as coisas
 
-- Cardápio e preços: `src/data/menu.js`
-- Horário, Pix, WhatsApp, mesas e taxas de entrega: `src/config.js`
+- Cardápio e preços: `src/dados/cardapio.js`
+- Horário, Pix, WhatsApp, mesas e taxas de entrega: `src/configuracao.js`
 - Banco de dados (tabela e permissões): `supabase/schema.sql`
 
 ## Netlify

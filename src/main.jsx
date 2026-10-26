@@ -1,31 +1,31 @@
 import { StrictMode, Suspense, lazy } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import { CartProvider } from './context/CartContext'
-import MenuPage from './pages/MenuPage'
-import OrderPage from './pages/OrderPage'
+import { ProvedorCarrinho } from './contexto/ContextoCarrinho'
+import PaginaCardapio from './paginas/PaginaCardapio'
+import PaginaPedido from './paginas/PaginaPedido'
 // O painel só é baixado por quem abre /admin (clientes não carregam esse código).
-const AdminPage = lazy(() => import('./pages/AdminPage'))
-import './styles.css'
+const PaginaAdmin = lazy(() => import('./paginas/PaginaAdmin'))
+import './estilos.css'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
-      <CartProvider>
+      <ProvedorCarrinho>
         <Routes>
-          <Route path="/" element={<MenuPage />} />
-          <Route path="/pedido/:id" element={<OrderPage />} />
+          <Route path="/" element={<PaginaCardapio />} />
+          <Route path="/pedido/:id" element={<PaginaPedido />} />
           <Route
             path="/admin"
             element={
               <Suspense fallback={<div className="page page--center" />}>
-                <AdminPage />
+                <PaginaAdmin />
               </Suspense>
             }
           />
-          <Route path="*" element={<MenuPage />} />
+          <Route path="*" element={<PaginaCardapio />} />
         </Routes>
-      </CartProvider>
+      </ProvedorCarrinho>
     </BrowserRouter>
   </StrictMode>,
 )
